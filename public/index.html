@@ -1,0 +1,2384 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f3ef" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Aperture Intelligence Feed</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #161616;
+        --muted: #77756f;
+        --line: #deddd8;
+        --paper: #f4f3ef;
+        --card: #fffefa;
+        --accent: #e7ff55;
+        --accent-ink: #182000;
+        --score: #181818;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      html {
+        background: var(--paper);
+      }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        line-height: 1.45;
+      }
+      button,
+      select {
+        font: inherit;
+      }
+      button,
+      summary {
+        touch-action: manipulation;
+      }
+      button:focus-visible,
+      select:focus-visible,
+      summary:focus-visible,
+      a:focus-visible {
+        outline: 3px solid #687600;
+        outline-offset: 3px;
+      }
+      a {
+        color: inherit;
+      }
+      .shell {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 28px 28px 80px;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding-bottom: 26px;
+        border-bottom: 1px solid var(--ink);
+      }
+      .brand {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+      }
+      .brand h1 {
+        margin: 0;
+        font-size: clamp(1.35rem, 2vw, 1.8rem);
+        letter-spacing: -0.05em;
+      }
+      .brand span {
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+      .apply-button {
+        border: 1px solid var(--ink);
+        background: var(--ink);
+        color: white;
+        border-radius: 999px;
+        padding: 9px 16px;
+        cursor: pointer;
+      }
+      .apply-button:hover {
+        background: #3a3a3a;
+      }
+      .view-tabs {
+        display: flex;
+        gap: 6px;
+        margin: 24px 0 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .view-tab {
+        border: 0;
+        border-bottom: 3px solid transparent;
+        background: transparent;
+        color: var(--muted);
+        padding: 10px 14px 9px;
+        cursor: pointer;
+        font-weight: 650;
+      }
+      .view-tab.active {
+        border-bottom-color: var(--ink);
+        color: var(--ink);
+      }
+      .view-tab:hover {
+        color: var(--ink);
+      }
+      .intro {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 24px;
+        padding: 46px 0 30px;
+      }
+      .intro h2 {
+        max-width: 700px;
+        margin: 0;
+        font-size: clamp(2.5rem, 7vw, 6.5rem);
+        line-height: 0.88;
+        letter-spacing: -0.085em;
+        font-weight: 700;
+      }
+      .intro p {
+        max-width: 250px;
+        margin: 0 0 4px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 14px 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .toolbar label {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .filter-control {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .filter-label {
+        color: var(--muted);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .filter-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      .filter-option {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--card);
+        color: var(--muted);
+        padding: 6px 10px;
+        cursor: pointer;
+        font-size: 0.75rem;
+      }
+      .filter-option:hover,
+      .filter-option.active {
+        border-color: var(--ink);
+        background: var(--accent);
+        color: var(--accent-ink);
+      }
+      .score-slider {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .score-slider input {
+        width: 130px;
+        accent-color: var(--ink);
+        cursor: pointer;
+      }
+      .score-threshold {
+        min-width: 34px;
+        color: var(--ink);
+        font-size: 0.78rem;
+        font-variant-numeric: tabular-nums;
+      }
+      .clear-button {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        padding: 6px 0;
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .clear-button:hover {
+        color: var(--ink);
+      }
+      select {
+        min-height: 36px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        background: var(--card);
+        color: var(--ink);
+        padding: 6px 28px 6px 9px;
+      }
+      .toolbar .spacer {
+        flex: 1;
+      }
+      .mobile-filter-bar,
+      .mobile-filter-header,
+      .mobile-filter-apply,
+      .mobile-filter-backdrop {
+        display: none;
+      }
+      .feed-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 20px;
+        padding: 28px 0 12px;
+      }
+      .feed-heading h3 {
+        margin: 0;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      #feed-summary,
+      #sync-status {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      .feed {
+        border-top: 1px solid var(--ink);
+      }
+      .feed-footer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 24px 0;
+      }
+      .load-more {
+        border: 1px solid var(--ink);
+        border-radius: 999px;
+        background: var(--card);
+        color: var(--ink);
+        padding: 9px 18px;
+        cursor: pointer;
+      }
+      .load-more:hover {
+        background: var(--accent);
+      }
+      .load-more:disabled {
+        cursor: wait;
+        opacity: 0.6;
+      }
+      .pagination-status {
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+      .feed-diagnostic {
+        color: var(--muted);
+        font-size: 0.75rem;
+      }
+      .story {
+        display: grid;
+        grid-template-columns: 88px minmax(0, 1fr) max-content 28px;
+        gap: 22px;
+        padding: 20px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .story:hover {
+        background: rgba(255, 255, 255, 0.35);
+      }
+      .score-column {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+      }
+      .score {
+        color: var(--score);
+        font-size: 2.7rem;
+        line-height: 0.9;
+        letter-spacing: -0.08em;
+        font-variant-numeric: tabular-nums;
+      }
+      .score-label {
+        color: var(--muted);
+        font-size: 0.66rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+      .source-column {
+        align-self: start;
+        justify-self: end;
+        padding-top: 3px;
+      }
+      .source-column .tag {
+        white-space: nowrap;
+      }
+      .expand-column {
+        align-self: start;
+        justify-self: end;
+      }
+      .expand-button {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 1.4rem;
+        line-height: 1;
+        padding: 0;
+      }
+      .expand-button:hover {
+        color: var(--ink);
+      }
+      .story-toggle {
+        min-width: 0;
+        list-style: none;
+        cursor: pointer;
+      }
+      .story-toggle::-webkit-details-marker {
+        display: none;
+      }
+      .story-toggle::after {
+        content: none;
+      }
+      details[open] .story-toggle::after {
+        content: none;
+      }
+      .story-title {
+        display: block;
+        padding-right: 28px;
+        font-size: clamp(1.08rem, 2vw, 1.45rem);
+        font-weight: 600;
+        line-height: 1.08;
+        letter-spacing: -0.035em;
+        text-wrap: balance;
+      }
+      .story-meta {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+      .story-title-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 8px;
+        padding-right: 28px;
+      }
+      @media (max-width: 640px) {
+        .story-title-line {
+          gap: 6px;
+        }
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 11px;
+      }
+      .tag {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: transparent;
+        color: #5d5b55;
+        padding: 4px 9px;
+        font-size: 0.7rem;
+        cursor: pointer;
+      }
+      .tag:hover {
+        border-color: var(--ink);
+        color: var(--ink);
+        background: var(--accent);
+      }
+      .tag[aria-pressed="true"] {
+        border-color: var(--accent-ink);
+        color: var(--ink);
+        background: var(--accent);
+        box-shadow: inset 0 0 0 1px var(--accent-ink);
+      }
+      .story-detail {
+        margin-top: 18px;
+        padding: 18px 20px;
+        border-left: 3px solid var(--accent-ink);
+        background: var(--card);
+      }
+      .cve-toolbar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 14px 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .cve-search,
+      .cve-number {
+        min-width: 150px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--card);
+        color: var(--ink);
+        padding: 8px 12px;
+        font: inherit;
+        font-size: 0.82rem;
+      }
+      .cve-table-wrap {
+        overflow-x: auto;
+        margin-top: 24px;
+        border-top: 1px solid var(--line);
+      }
+      .cve-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 760px;
+      }
+      .cve-table th,
+      .cve-table td {
+        padding: 14px 10px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+      .cve-table th {
+        color: var(--muted);
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .cve-table td {
+        font-size: 0.86rem;
+      }
+      .cve-table a {
+        color: var(--ink);
+        font-weight: 700;
+      }
+      .cve-title {
+        max-width: 460px;
+        font-weight: 600;
+      }
+      .cve-description {
+        max-width: 620px;
+        margin: 10px 0 0;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .severity-badge {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 0.66rem;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .severity-critical {
+        background: #ffd7d2;
+        color: #7f1d1d;
+      }
+      .severity-high {
+        background: #ffe2b8;
+        color: #7c3500;
+      }
+      .severity-medium {
+        background: #fff0a8;
+        color: #604b00;
+      }
+      .severity-low {
+        background: #dff3d8;
+        color: #285c22;
+      }
+      .severity-unknown {
+        background: var(--line);
+        color: var(--muted);
+      }
+      .story-detail p {
+        margin: 0 0 14px;
+        max-width: 780px;
+      }
+      .story-detail p:last-child {
+        margin-bottom: 0;
+      }
+      .detail-scores {
+        color: var(--muted);
+        font-size: 0.72rem;
+        letter-spacing: 0.02em;
+        margin-top: 12px !important;
+      }
+      .detail-label {
+        color: var(--muted);
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+      .story-detail ul {
+        margin: 0 0 14px;
+        padding-left: 20px;
+      }
+      .story-detail li + li {
+        margin-top: 6px;
+      }
+      .source-link {
+        display: inline-flex;
+        margin-top: 4px;
+        color: var(--ink);
+        font-weight: 650;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 3px;
+      }
+      .pending {
+        color: var(--muted);
+        font-style: italic;
+      }
+      .empty {
+        padding: 48px 0;
+        color: var(--muted);
+      }
+      @media (max-width: 700px) {
+        .shell {
+          padding: 18px 16px 60px;
+        }
+        .topbar,
+        .intro {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        .intro {
+          gap: 18px;
+          padding: 34px 0 24px;
+        }
+        .intro p {
+          max-width: none;
+        }
+        .toolbar label {
+          width: 100%;
+          justify-content: space-between;
+        }
+        .toolbar select {
+          flex: 1;
+        }
+        .toolbar .spacer {
+          display: none;
+        }
+        .apply-button {
+          width: 100%;
+        }
+        .mobile-filter-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 12px 0;
+          border-top: 1px solid var(--line);
+          border-bottom: 1px solid var(--line);
+        }
+        .mobile-filter-button,
+        .mobile-filter-apply {
+          min-height: 42px;
+          border: 1px solid var(--ink);
+          border-radius: 999px;
+          background: var(--card);
+          color: var(--ink);
+          padding: 9px 14px;
+          cursor: pointer;
+          touch-action: manipulation;
+        }
+        .mobile-filter-backdrop {
+          position: fixed;
+          z-index: 19;
+          inset: 0;
+          display: block;
+          width: 100%;
+          border: 0;
+          background: rgba(22, 22, 22, 0.35);
+        }
+        .mobile-filter-button {
+          flex: 0 0 auto;
+        }
+        .mobile-filter-summary {
+          min-width: 0;
+          overflow: hidden;
+          color: var(--muted);
+          font-size: 0.78rem;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        #news-toolbar.mobile-open {
+          position: fixed;
+          z-index: 20;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          display: block;
+          max-height: min(82vh, 720px);
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+          border: 0;
+          background: var(--paper);
+          box-shadow: 0 -8px 28px rgba(22, 22, 22, 0.18);
+        }
+        #news-toolbar.mobile-open .mobile-filter-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 14px;
+        }
+        .mobile-filter-header h3 {
+          margin: 0;
+          font-size: 1rem;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+        }
+        .mobile-filter-close {
+          min-width: 42px;
+          min-height: 42px;
+          border: 1px solid var(--line);
+          border-radius: 999px;
+          background: var(--card);
+          color: var(--ink);
+          cursor: pointer;
+          font-size: 1.2rem;
+        }
+        #news-toolbar.mobile-open .mobile-filter-apply {
+          display: block;
+          width: 100%;
+          margin-top: 14px;
+          background: var(--ink);
+          color: white;
+        }
+        #news-toolbar:not(.mobile-open) {
+          display: none;
+        }
+        .filter-option {
+          min-height: 40px;
+          padding: 8px 12px;
+        }
+        .clear-button {
+          min-height: 40px;
+          padding: 8px 0;
+        }
+        .source-column {
+          display: none;
+        }
+        .story {
+          grid-template-columns: 58px minmax(0, 1fr) 24px;
+          gap: 14px;
+        }
+        .score {
+          font-size: 2rem;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <h1>Aperture</h1>
+          <span>Personal Intelligence Feed</span>
+        </div>
+      </header>
+      <nav class="view-tabs" role="tablist" aria-label="Aperture collections">
+        <button
+          class="view-tab active"
+          id="news-tab"
+          data-view="news"
+          role="tab"
+          aria-selected="true"
+          aria-controls="news-panel"
+          type="button"
+        >
+          News
+        </button>
+        <button
+          class="view-tab"
+          id="reports-tab"
+          data-view="reports"
+          role="tab"
+          aria-selected="false"
+          aria-controls="reports-panel"
+          type="button"
+        >
+          Reports
+        </button>
+        <button
+          class="view-tab"
+          id="cves-tab"
+          data-view="cves"
+          role="tab"
+          aria-selected="false"
+          aria-controls="cves-panel"
+          type="button"
+        >
+          CVE
+        </button>
+      </nav>
+
+      <section class="intro" aria-labelledby="page-heading">
+        <h2 id="page-heading">See what matters</h2>
+        <p>News ranked by quality, personal utility, and actionability.</p>
+      </section>
+
+      <div class="mobile-filter-bar" aria-label="News filter controls">
+        <button
+          id="news-filter-toggle"
+          class="mobile-filter-button"
+          type="button"
+          aria-controls="news-toolbar"
+          aria-expanded="false"
+        >
+          Filters
+        </button>
+        <span
+          id="news-filter-summary"
+          class="mobile-filter-summary"
+          role="status"
+        ></span>
+      </div>
+      <button
+        id="news-filter-backdrop"
+        class="mobile-filter-backdrop"
+        type="button"
+        aria-label="Close news filters"
+        hidden
+      ></button>
+      <section id="news-toolbar" class="toolbar" aria-label="News filters">
+        <div class="mobile-filter-header">
+          <h3>News filters</h3>
+          <button
+            id="news-filter-close"
+            class="mobile-filter-close"
+            type="button"
+            aria-label="Close news filters"
+          >
+            ×
+          </button>
+        </div>
+        <div class="filter-control">
+          <span class="filter-label">Sort</span>
+          <div class="filter-options" data-filter="sort" data-multiple="false">
+            <button
+              class="filter-option active"
+              data-value="score"
+              type="button"
+            >
+              Top score</button
+            ><button class="filter-option" data-value="recent" type="button">
+              Most recent
+            </button>
+          </div>
+        </div>
+        <div class="filter-control">
+          <span class="filter-label">Added</span>
+          <div
+            class="filter-options"
+            data-filter="timeWindow"
+            data-multiple="false"
+          >
+            <button class="filter-option" data-value="1h" type="button">
+              1 hour</button
+            ><button class="filter-option" data-value="4h" type="button">
+              4 hours</button
+            ><button class="filter-option" data-value="1d" type="button">
+              1 day
+            </button>
+          </div>
+        </div>
+        <div class="filter-control">
+          <span class="filter-label">Topic</span>
+          <div class="filter-options" data-filter="topic">
+            <button class="filter-option" data-value="ai" type="button">
+              AI</button
+            ><button
+              class="filter-option"
+              data-value="cybersecurity"
+              type="button"
+            >
+              Cybersecurity</button
+            ><button
+              class="filter-option"
+              data-value="geopolitics"
+              type="button"
+            >
+              Geopolitics</button
+            ><button
+              class="filter-option"
+              data-value="technology_strategy"
+              type="button"
+            >
+              Technology strategy</button
+            ><button
+              class="filter-option"
+              data-value="executive_decision_making"
+              type="button"
+            >
+              Executive decisions</button
+            ><button
+              class="filter-option"
+              data-value="business_opportunity"
+              type="button"
+            >
+              Business opportunity
+            </button>
+          </div>
+        </div>
+        <div class="filter-control">
+          <span class="filter-label">Format</span>
+          <div class="filter-options" data-filter="contentType">
+            <button class="filter-option" data-value="analysis" type="button">
+              Analysis</button
+            ><button class="filter-option" data-value="news" type="button">
+              News</button
+            ><button class="filter-option" data-value="research" type="button">
+              Research</button
+            ><button class="filter-option" data-value="opinion" type="button">
+              Opinion</button
+            ><button class="filter-option" data-value="how_to" type="button">
+              How-to</button
+            ><button class="filter-option" data-value="interview" type="button">
+              Interview</button
+            ><button
+              class="filter-option"
+              data-value="announcement"
+              type="button"
+            >
+              Announcement
+            </button>
+          </div>
+        </div>
+        <div class="filter-control">
+          <span class="filter-label">Triage</span>
+          <div class="filter-options" data-filter="triageState">
+            <button class="filter-option" data-value="read_now" type="button">
+              Read now</button
+            ><button
+              class="filter-option"
+              data-value="important_context"
+              type="button"
+            >
+              Important context</button
+            ><button class="filter-option" data-value="watch" type="button">
+              Watch</button
+            ><button class="filter-option" data-value="archive" type="button">
+              Archive
+            </button>
+          </div>
+        </div>
+        <div class="filter-control">
+          <span class="filter-label">Min score</span>
+          <div class="score-slider">
+            <input
+              id="score-filter"
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value="80"
+              aria-label="Minimum final score"
+            />
+            <output
+              id="score-threshold"
+              class="score-threshold"
+              for="score-filter"
+              >80+</output
+            >
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <button id="clear-filters" class="clear-button" type="button">
+          Reset filters
+        </button>
+        <button
+          id="news-filter-apply"
+          class="mobile-filter-apply"
+          type="button"
+        >
+          Apply filters
+        </button>
+      </section>
+
+      <section
+        id="reports-toolbar"
+        class="toolbar"
+        aria-label="Report filters"
+        hidden
+      >
+        <div class="filter-control">
+          <span class="filter-label">Sort</span>
+          <div
+            class="filter-options report-filter-group"
+            data-report-filter="sort"
+          >
+            <button
+              class="filter-option report-filter-option active"
+              data-value="score"
+              type="button"
+            >
+              Top score
+            </button>
+            <button
+              class="filter-option report-filter-option"
+              data-value="recent"
+              type="button"
+            >
+              Most recent
+            </button>
+          </div>
+        </div>
+        <div class="filter-control">
+          <span class="filter-label">Source</span>
+          <div
+            class="filter-options report-filter-group"
+            data-report-filter="source"
+          >
+            <button
+              class="filter-option report-filter-option"
+              data-value="orkl"
+              type="button"
+            >
+              ORKL
+            </button>
+            <button
+              class="filter-option report-filter-option"
+              data-value="rosti"
+              type="button"
+            >
+              ROSTI
+            </button>
+            <button
+              class="filter-option report-filter-option"
+              data-value="github_annual_reports"
+              type="button"
+            >
+              Annual reports
+            </button>
+          </div>
+        </div>
+        <div class="filter-control">
+          <span class="filter-label">Type</span>
+          <div
+            class="filter-options report-filter-group"
+            data-report-filter="reportType"
+          >
+            <button
+              class="filter-option report-filter-option"
+              data-value="threat_intelligence"
+              type="button"
+            >
+              Threat intelligence
+            </button>
+            <button
+              class="filter-option report-filter-option"
+              data-value="annual_analysis"
+              type="button"
+            >
+              Annual analysis
+            </button>
+            <button
+              class="filter-option report-filter-option"
+              data-value="survey"
+              type="button"
+            >
+              Survey
+            </button>
+            <button
+              class="filter-option report-filter-option"
+              data-value="research"
+              type="button"
+            >
+              Research
+            </button>
+            <button
+              class="filter-option report-filter-option"
+              data-value="other"
+              type="button"
+            >
+              Other
+            </button>
+          </div>
+        </div>
+        <div class="filter-control">
+          <span class="filter-label">Timing</span>
+          <div
+            class="filter-options report-filter-group"
+            data-report-filter="temporalClassification"
+          >
+            <button
+              class="filter-option report-filter-option"
+              data-value="new_activity"
+              type="button"
+            >
+              New activity
+            </button>
+            <button
+              class="filter-option report-filter-option"
+              data-value="new_reporting_historical_activity"
+              type="button"
+            >
+              Historical activity
+            </button>
+            <button
+              class="filter-option report-filter-option"
+              data-value="annual_edition"
+              type="button"
+            >
+              Annual edition
+            </button>
+          </div>
+        </div>
+        <div class="filter-control">
+          <span class="filter-label">Observed</span>
+          <div
+            class="filter-options report-filter-group"
+            data-report-filter="observedWithinHours"
+            data-multiple="false"
+          >
+            <button
+              class="filter-option report-filter-option"
+              data-value="1"
+              type="button"
+            >
+              1 hour
+            </button>
+            <button
+              class="filter-option report-filter-option"
+              data-value="4"
+              type="button"
+            >
+              4 hours
+            </button>
+            <button
+              class="filter-option report-filter-option"
+              data-value="24"
+              type="button"
+            >
+              1 day
+            </button>
+            <button
+              class="filter-option report-filter-option active"
+              data-value="72"
+              type="button"
+            >
+              3 days
+            </button>
+          </div>
+        </div>
+        <label
+          >Year
+          <select id="report-year">
+            <option value="">Any</option>
+            <option>2026</option>
+            <option>2025</option>
+            <option>2024</option>
+          </select></label
+        >
+        <label
+          >Min score
+          <input
+            id="report-score-filter"
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+            step="1"
+          /><output id="report-score-threshold">Any</output></label
+        >
+        <div class="spacer"></div>
+        <button id="clear-report-filters" class="clear-button" type="button">
+          Clear filters
+        </button>
+      </section>
+
+      <section id="news-panel" role="tabpanel" aria-labelledby="news-tab">
+        <div class="feed-heading">
+          <h3 id="feed-heading">Live feed</h3>
+          <div>
+            <span id="feed-summary">Loading…</span>
+            <span id="sync-status" role="status">Loading…</span>
+            <span
+              id="active-filter-summary"
+              class="feed-diagnostic"
+              role="status"
+            ></span>
+          </div>
+        </div>
+        <div id="feed" class="feed" aria-live="polite"></div>
+        <div class="feed-footer">
+          <button id="load-more" class="load-more" type="button" hidden>
+            Load more
+          </button>
+          <span
+            id="pagination-status"
+            class="pagination-status"
+            role="status"
+          ></span>
+        </div>
+      </section>
+      <section
+        id="reports-panel"
+        role="tabpanel"
+        aria-labelledby="reports-tab"
+        hidden
+      >
+        <div class="feed-heading">
+          <h3 id="reports-heading">New reports</h3>
+          <span id="reports-summary">Loading…</span>
+          <span id="reports-diagnostic" class="feed-diagnostic"></span>
+        </div>
+        <div id="reports-feed" class="feed" aria-live="polite"></div>
+        <div class="feed-footer">
+          <button id="reports-load-more" class="load-more" type="button" hidden>
+            Load more</button
+          ><span
+            id="reports-pagination-status"
+            class="pagination-status"
+          ></span>
+        </div>
+      </section>
+      <section
+        id="cves-panel"
+        role="tabpanel"
+        aria-labelledby="cves-tab"
+        hidden
+      >
+        <div class="cve-toolbar" aria-label="CVE filters">
+          <div class="filter-control">
+            <span class="filter-label">Severity</span>
+            <div class="filter-options" data-cve-filter="severity">
+              <button class="filter-option" data-value="critical" type="button">
+                Critical
+              </button>
+              <button class="filter-option" data-value="high" type="button">
+                High
+              </button>
+              <button class="filter-option" data-value="medium" type="button">
+                Medium
+              </button>
+              <button class="filter-option" data-value="low" type="button">
+                Low
+              </button>
+            </div>
+          </div>
+          <div class="filter-control">
+            <span class="filter-label">Sort</span>
+            <div
+              class="filter-options"
+              data-cve-filter="sort"
+              data-multiple="false"
+            >
+              <button
+                class="filter-option active"
+                data-value="severity"
+                type="button"
+              >
+                Severity
+              </button>
+              <button class="filter-option" data-value="recent" type="button">
+                Recent
+              </button>
+              <button class="filter-option" data-value="cvss" type="button">
+                CVSS
+              </button>
+            </div>
+          </div>
+          <div class="filter-control">
+            <span class="filter-label">Window</span>
+            <div
+              class="filter-options"
+              data-cve-filter="window"
+              data-multiple="false"
+            >
+              <button
+                class="filter-option active"
+                data-value="24"
+                type="button"
+              >
+                24 hours
+              </button>
+              <button class="filter-option" data-value="168" type="button">
+                7 days
+              </button>
+            </div>
+          </div>
+          <input
+            id="cve-search"
+            class="cve-search"
+            type="search"
+            placeholder="Search CVE, product, description"
+            aria-label="Search vulnerabilities"
+          />
+          <input
+            id="cve-minimum"
+            class="cve-number"
+            type="number"
+            min="0"
+            max="10"
+            step="0.1"
+            placeholder="Min CVSS"
+            aria-label="Minimum CVSS score"
+          />
+        </div>
+        <div class="feed-heading">
+          <h3 id="cves-heading">Recent vulnerabilities</h3>
+          <span id="cves-summary">Loading…</span>
+        </div>
+        <div class="cve-table-wrap">
+          <table class="cve-table">
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>CVE</th>
+                <th>Title</th>
+                <th>CVSS</th>
+                <th>Published</th>
+                <th>Products</th>
+              </tr>
+            </thead>
+            <tbody id="cves-table-body"></tbody>
+          </table>
+        </div>
+        <div class="feed-footer">
+          <button id="cves-load-more" class="load-more" type="button" hidden>
+            Load more
+          </button>
+          <span id="cves-pagination-status" class="pagination-status"></span>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const syncStatus = document.querySelector("#sync-status");
+      const feedSummary = document.querySelector("#feed-summary");
+      const feed = document.querySelector("#feed");
+      const loadMore = document.querySelector("#load-more");
+      const paginationStatus = document.querySelector("#pagination-status");
+      const newsToolbar = document.querySelector("#news-toolbar");
+      const mobileFilterBar = document.querySelector(".mobile-filter-bar");
+      const newsFilterToggle = document.querySelector("#news-filter-toggle");
+      const newsFilterClose = document.querySelector("#news-filter-close");
+      const newsFilterApply = document.querySelector("#news-filter-apply");
+      const newsFilterBackdrop = document.querySelector(
+        "#news-filter-backdrop",
+      );
+      const newsFilterSummary = document.querySelector("#news-filter-summary");
+      const activeFilterSummary = document.querySelector(
+        "#active-filter-summary",
+      );
+      const reportsToolbar = document.querySelector("#reports-toolbar");
+      const reportsView = document.querySelector("#reports-panel");
+      const reportsFeed = document.querySelector("#reports-feed");
+      const reportsSummary = document.querySelector("#reports-summary");
+      const reportsDiagnostic = document.querySelector("#reports-diagnostic");
+      const reportsLoadMore = document.querySelector("#reports-load-more");
+      const reportsPaginationStatus = document.querySelector(
+        "#reports-pagination-status",
+      );
+      const cvesToolbar = document.querySelector(".cve-toolbar");
+      const cvesView = document.querySelector("#cves-panel");
+      const cvesTableBody = document.querySelector("#cves-table-body");
+      const cvesSummary = document.querySelector("#cves-summary");
+      const cvesLoadMore = document.querySelector("#cves-load-more");
+      const cvesPaginationStatus = document.querySelector(
+        "#cves-pagination-status",
+      );
+      const cveSearch = document.querySelector("#cve-search");
+      const cveMinimum = document.querySelector("#cve-minimum");
+      const reportYear = document.querySelector("#report-year");
+      const reportScoreFilter = document.querySelector("#report-score-filter");
+      const reportScoreThreshold = document.querySelector(
+        "#report-score-threshold",
+      );
+      const filterState = {
+        sort: "score",
+        topic: [],
+        contentType: [],
+        triageState: [],
+        sourceName: [],
+        category: [],
+        timeWindow: "",
+        minimumFinalScore: "80",
+      };
+      const clearFilters = document.querySelector("#clear-filters");
+      const scoreFilter = document.querySelector("#score-filter");
+      const scoreThreshold = document.querySelector("#score-threshold");
+      let scoreFilterTimer;
+      let nextCursor = null;
+      let hasMore = false;
+      let feedLoading = false;
+      let feedReloadQueued = false;
+      let feedLoadTimer;
+      const reportFilterState = {
+        source: [],
+        reportType: [],
+        temporalClassification: [],
+        year: "",
+        minimumScore: "0",
+        sort: "score",
+        observedWithinHours: "72",
+      };
+      let reportsNextCursor = null;
+      let reportsHasMore = false;
+      let reportsLoading = false;
+      const cveFilterState = {
+        severity: [],
+        sort: "severity",
+        window: "24",
+        search: "",
+        minimumCvss: "",
+      };
+      let cvesNextCursor = null;
+      let cvesHasMore = false;
+      let cvesLoading = false;
+      let activeView = "news";
+
+      function safeHref(element, value) {
+        if (typeof value !== "string" || value.trim() === "") return false;
+        try {
+          const url = new URL(value);
+          if (url.protocol !== "http:" && url.protocol !== "https:") {
+            return false;
+          }
+          element.href = value;
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      const label = (value) => value.replaceAll("_", " ");
+      const score = (value) => Number(value).toFixed(1);
+      const formatDate = (value) =>
+        value
+          ? new Date(value).toLocaleDateString(undefined, {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })
+          : "Unknown date";
+      const formatDateTime = (value) =>
+        value
+          ? new Date(value).toLocaleString(undefined, {
+              day: "2-digit",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "Unknown time";
+
+      const newsFilterOptions = {
+        sort: ["score", "recent"],
+        timeWindow: ["1h", "4h", "1d"],
+        topic: [
+          "ai",
+          "cybersecurity",
+          "geopolitics",
+          "technology_strategy",
+          "executive_decision_making",
+          "business_opportunity",
+        ],
+        contentType: [
+          "analysis",
+          "news",
+          "research",
+          "opinion",
+          "how_to",
+          "interview",
+          "announcement",
+        ],
+        triageState: ["read_now", "important_context", "watch", "archive"],
+      };
+
+      function isMobileFilterMode() {
+        return window.matchMedia("(max-width: 700px)").matches;
+      }
+
+      function restoreNewsFiltersFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        for (const name of [
+          "topic",
+          "contentType",
+          "triageState",
+          "sourceName",
+          "category",
+        ]) {
+          filterState[name] = params
+            .getAll(name)
+            .filter((value) =>
+              newsFilterOptions[name]
+                ? newsFilterOptions[name].includes(value)
+                : value.length <= 100,
+            )
+            .slice(0, 20);
+        }
+        if (newsFilterOptions.sort.includes(params.get("sort"))) {
+          filterState.sort = params.get("sort");
+        }
+        if (newsFilterOptions.timeWindow.includes(params.get("timeWindow"))) {
+          filterState.timeWindow = params.get("timeWindow");
+        }
+        const minimumFinalScoreParam = params.get("minimumFinalScore");
+        const minimumFinalScore = Number(minimumFinalScoreParam);
+        if (
+          minimumFinalScoreParam !== null &&
+          Number.isInteger(minimumFinalScore) &&
+          minimumFinalScore >= 0 &&
+          minimumFinalScore <= 100
+        ) {
+          filterState.minimumFinalScore = String(minimumFinalScore);
+        }
+      }
+
+      function updateNewsFilterUrl() {
+        const url = new URL(window.location.href);
+        for (const name of [
+          "sort",
+          "timeWindow",
+          "topic",
+          "contentType",
+          "triageState",
+          "sourceName",
+          "category",
+          "minimumFinalScore",
+        ]) {
+          url.searchParams.delete(name);
+        }
+        if (filterState.sort !== "score") {
+          url.searchParams.set("sort", filterState.sort);
+        }
+        if (filterState.timeWindow) {
+          url.searchParams.set("timeWindow", filterState.timeWindow);
+        }
+        for (const name of [
+          "topic",
+          "contentType",
+          "triageState",
+          "sourceName",
+          "category",
+        ]) {
+          filterState[name].forEach((value) =>
+            url.searchParams.append(name, value),
+          );
+        }
+        if (filterState.minimumFinalScore !== "80") {
+          url.searchParams.set(
+            "minimumFinalScore",
+            filterState.minimumFinalScore,
+          );
+        }
+        window.history.replaceState(
+          null,
+          "",
+          `${url.pathname}${url.search}${url.hash}`,
+        );
+      }
+
+      function updateNewsFilterSummary() {
+        const activeCount =
+          filterState.topic.length +
+          filterState.contentType.length +
+          filterState.triageState.length +
+          filterState.sourceName.length +
+          filterState.category.length +
+          (filterState.sort !== "score" ? 1 : 0) +
+          (filterState.timeWindow ? 1 : 0) +
+          (filterState.minimumFinalScore !== "80" ? 1 : 0);
+        const summary = activeCount
+          ? `${activeCount} active filter${activeCount === 1 ? "" : "s"}`
+          : "Default filters";
+        newsFilterSummary.textContent = summary;
+        activeFilterSummary.textContent = `${
+          filterState.sort === "score" ? "Top score" : "Most recent"
+        } · ${filterState.minimumFinalScore === "0" ? "Any score" : `${filterState.minimumFinalScore}+`}`;
+      }
+
+      function syncNewsFilterControls() {
+        document
+          .querySelectorAll("#news-toolbar [data-filter]")
+          .forEach((group) => {
+            const name = group.dataset.filter;
+            group.querySelectorAll(".filter-option").forEach((button) => {
+              const active = Array.isArray(filterState[name])
+                ? filterState[name].includes(button.dataset.value)
+                : filterState[name] === button.dataset.value;
+              button.classList.toggle("active", active);
+              button.setAttribute("aria-pressed", String(active));
+            });
+          });
+        scoreFilter.value = filterState.minimumFinalScore;
+        scoreThreshold.textContent =
+          filterState.minimumFinalScore === "0"
+            ? "Any"
+            : `${filterState.minimumFinalScore}+`;
+        updateNewsFilterSummary();
+      }
+
+      function scheduleFeedLoad({ immediate = false } = {}) {
+        updateNewsFilterUrl();
+        updateNewsFilterSummary();
+        if (
+          !immediate &&
+          isMobileFilterMode() &&
+          newsToolbar.classList.contains("mobile-open")
+        ) {
+          return;
+        }
+        window.clearTimeout(feedLoadTimer);
+        feedLoadTimer = window.setTimeout(
+          () => loadFeed().catch(showFeedError),
+          180,
+        );
+      }
+
+      restoreNewsFiltersFromUrl();
+      syncNewsFilterControls();
+      document
+        .querySelectorAll("#news-toolbar .filter-control")
+        .forEach((group) => {
+          group.setAttribute("role", "group");
+          const label = group.querySelector(".filter-label");
+          if (label) group.setAttribute("aria-label", label.textContent.trim());
+        });
+
+      function toggleFilter(name, value) {
+        const group = document.querySelector(`[data-filter="${name}"]`);
+        const multiple = group?.dataset.multiple !== "false";
+        if (!multiple) {
+          filterState[name] = value;
+          group
+            ?.querySelectorAll(".filter-option")
+            .forEach((button) =>
+              button.classList.toggle("active", button.dataset.value === value),
+            );
+        } else {
+          const values = filterState[name];
+          filterState[name] = values.includes(value)
+            ? values.filter((item) => item !== value)
+            : [...values, value];
+          group
+            ?.querySelector(`[data-value="${value}"]`)
+            ?.classList.toggle("active", filterState[name].includes(value));
+        }
+        document
+          .querySelectorAll(
+            `[data-filter-name="${name}"][data-filter-value="${value}"]`,
+          )
+          .forEach((button) =>
+            button.setAttribute(
+              "aria-pressed",
+              String(
+                Array.isArray(filterState[name])
+                  ? filterState[name].includes(value)
+                  : filterState[name] === value,
+              ),
+            ),
+          );
+        syncNewsFilterControls();
+        scheduleFeedLoad();
+      }
+
+      function createTag(text, filterName, filterValue) {
+        const tag = document.createElement("button");
+        tag.className = "tag";
+        tag.type = "button";
+        tag.textContent = text;
+        tag.dataset.filterName = filterName;
+        tag.dataset.filterValue = filterValue;
+        tag.setAttribute(
+          "aria-pressed",
+          String(
+            Array.isArray(filterState[filterName])
+              ? filterState[filterName].includes(filterValue)
+              : filterState[filterName] === filterValue,
+          ),
+        );
+        tag.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          toggleFilter(filterName, filterValue);
+        });
+        return tag;
+      }
+
+      function createExpandButton(details) {
+        const column = document.createElement("div");
+        column.className = "expand-column";
+        const button = document.createElement("button");
+        button.className = "expand-button";
+        button.type = "button";
+        button.addEventListener("click", () => {
+          details.open = !details.open;
+        });
+        const sync = () => {
+          button.textContent = details.open ? "−" : "+";
+          button.setAttribute("aria-expanded", String(details.open));
+          button.setAttribute(
+            "aria-label",
+            details.open ? "Collapse details" : "Expand details",
+          );
+        };
+        details.addEventListener("toggle", sync);
+        sync();
+        column.append(button);
+        return column;
+      }
+
+      function categoryLabel(value) {
+        return (
+          {
+            rss: "RSS",
+            video: "Video",
+            news: "News",
+            article: "Article",
+            email: "Email",
+            github_project: "GitHub project",
+          }[value] || label(value)
+        );
+      }
+
+      function sourceLabel(value) {
+        return (
+          {
+            readwise: "RSS",
+            rss: "RSS",
+            youtube: "YouTube",
+            mediastack: "Mediastack",
+            github_trending: "GitHub Trending",
+          }[value] || label(value)
+        );
+      }
+
+      function renderStories(stories, append = false) {
+        if (!append) feed.replaceChildren();
+        if (!stories.length && !append) {
+          feedSummary.textContent = "No stories match these filters";
+          const empty = document.createElement("p");
+          empty.className = "empty";
+          empty.textContent =
+            "Try widening the filters or sync your Readwise library.";
+          feed.append(empty);
+          return;
+        }
+
+        const loadedCount = feed.querySelectorAll(".story").length;
+        feedSummary.textContent = `${loadedCount + stories.length} stories${hasMore ? "" : " · end of feed"}`;
+
+        for (const story of stories) {
+          const row = document.createElement("article");
+          row.className = "story";
+
+          const scoreColumn = document.createElement("div");
+          scoreColumn.className = "score-column";
+          const scoreValue = document.createElement("strong");
+          scoreValue.className = "score";
+          scoreValue.textContent = score(story.finalScore);
+          const scoreLabel = document.createElement("span");
+          scoreLabel.className = "score-label";
+          scoreLabel.textContent = "score";
+          scoreColumn.append(scoreValue, scoreLabel);
+
+          const contentColumn = document.createElement("div");
+          const details = document.createElement("details");
+          const toggle = document.createElement("summary");
+          toggle.className = "story-toggle";
+          const title = document.createElement("span");
+          title.className = "story-title";
+          title.textContent = story.title;
+          const meta = document.createElement("div");
+          meta.className = "story-meta";
+          meta.textContent = `${story.siteName || "Unknown source"} · ${story.author || "Unknown author"} · added ${formatDateTime(story.createdAt)} · published ${formatDate(story.publishedDate)}`;
+          const titleLine = document.createElement("div");
+          titleLine.className = "story-title-line";
+          titleLine.append(title);
+          toggle.append(titleLine, meta);
+
+          const tags = document.createElement("div");
+          tags.className = "tags";
+          tags.append(
+            createTag(story.primaryTopic, "topic", story.primaryTopic),
+            createTag(story.contentType, "contentType", story.contentType),
+            createTag(story.triageState, "triageState", story.triageState),
+          );
+
+          const detail = document.createElement("div");
+          detail.className = "story-detail";
+          detail.hidden = true;
+          details.addEventListener("toggle", () => {
+            detail.hidden = !details.open;
+          });
+          const scores = document.createElement("p");
+          scores.className = "detail-scores";
+          scores.textContent = `Quality ${score(story.qualityScore)} · Utility ${score(story.personalUtilityScore)} · Actionability ${score(story.actionabilityScore)}`;
+          const status = document.createElement("p");
+          status.className = "detail-label";
+          status.textContent = `${story.evidenceStatus} evidence · ${story.freshnessStatus} freshness · ${story.publicationStatus === "summary_pending" ? "summary pending" : "summary available"}`;
+          detail.append(status);
+
+          if (story.summary) {
+            const summary = document.createElement("p");
+            summary.textContent = story.summary.summary;
+            detail.append(summary);
+            const why = document.createElement("p");
+            why.textContent = `Why it matters: ${story.summary.whyItMatters}`;
+            detail.append(why);
+            const points = document.createElement("ul");
+            for (const point of story.summary.keyPoints) {
+              const item = document.createElement("li");
+              item.textContent = point;
+              points.append(item);
+            }
+            detail.append(points);
+            if (story.summary.recommendedAction) {
+              const action = document.createElement("p");
+              action.textContent = `Recommended action: ${story.summary.recommendedAction}`;
+              detail.append(action);
+            }
+          } else {
+            const pending = document.createElement("p");
+            pending.className = "pending";
+            pending.textContent =
+              "Summary pending. The evaluated story is available now.";
+            detail.append(pending);
+          }
+
+          const source = document.createElement("a");
+          source.className = "source-link";
+          if (safeHref(source, story.sourceUrl)) {
+            source.target = "_blank";
+            source.rel = "noopener noreferrer";
+            source.textContent = "Read source ↗";
+            detail.append(source);
+          }
+          detail.append(scores);
+
+          details.append(toggle);
+          contentColumn.append(details, tags, detail);
+          const sourceColumn = document.createElement("div");
+          sourceColumn.className = "source-column";
+          sourceColumn.append(
+            createTag(
+              sourceLabel(story.sourceName),
+              "sourceName",
+              story.sourceName,
+            ),
+          );
+          row.append(
+            scoreColumn,
+            contentColumn,
+            sourceColumn,
+            createExpandButton(details),
+          );
+          feed.append(row);
+        }
+      }
+
+      function renderReports(reports, append = false) {
+        if (!append) reportsFeed.replaceChildren();
+        if (!reports.length && !append) {
+          reportsSummary.textContent = "No new reports in the last three days";
+          const empty = document.createElement("p");
+          empty.className = "empty";
+          empty.textContent =
+            "New reports will appear here after the next discovery run.";
+          reportsFeed.append(empty);
+          return;
+        }
+        const loaded = reportsFeed.querySelectorAll(".story").length;
+        reportsSummary.textContent = `${loaded + reports.length} reports${reportsHasMore ? "" : " · end of discovery window"}`;
+        for (const report of reports) {
+          const row = document.createElement("article");
+          row.className = "story";
+          const scoreColumn = document.createElement("div");
+          scoreColumn.className = "score-column";
+          const scoreValue = document.createElement("strong");
+          scoreValue.className = "score";
+          scoreValue.textContent =
+            report.finalScore === null ? "—" : score(report.finalScore);
+          const scoreLabel = document.createElement("span");
+          scoreLabel.className = "score-label";
+          scoreLabel.textContent = "report score";
+          scoreColumn.append(scoreValue, scoreLabel);
+          const content = document.createElement("div");
+          const details = document.createElement("details");
+          const summary = document.createElement("summary");
+          summary.className = "story-toggle";
+          const titleLine = document.createElement("div");
+          titleLine.className = "story-title-line";
+          const title = document.createElement("span");
+          title.className = "story-title";
+          title.textContent = report.title;
+          titleLine.append(title);
+          const meta = document.createElement("div");
+          meta.className = "story-meta";
+          meta.textContent = `${report.reportYear || "Unknown year"} · published ${formatDate(report.sourcePublishedAt)} · observed ${formatDate(report.observedAt)}`;
+          summary.append(titleLine, meta);
+          const detail = document.createElement("div");
+          detail.className = "story-detail";
+          const timing = document.createElement("p");
+          timing.className = "detail-label";
+          timing.textContent = `${label(report.temporalClassification)} · activity ${formatDate(report.activityStartAt)}–${formatDate(report.activityEndAt)}`;
+          detail.append(timing);
+          if (report.summary) {
+            const verdict = document.createElement("p");
+            verdict.textContent = `Read verdict: ${label(report.summary.readVerdict)}`;
+            detail.append(verdict);
+            const summaryText = document.createElement("p");
+            summaryText.textContent = report.summary.summary;
+            detail.append(summaryText);
+            appendReportList(
+              detail,
+              "Deep insights",
+              report.summary.deepInsights,
+            );
+            appendReportList(
+              detail,
+              "Mental models",
+              report.summary.mentalModels,
+            );
+            appendReportList(
+              detail,
+              "Key takeaways",
+              report.summary.keyTakeaways,
+            );
+            appendReportList(
+              detail,
+              "Recommendations",
+              report.summary.recommendations,
+            );
+          } else {
+            const pending = document.createElement("p");
+            pending.className = "pending";
+            pending.textContent = "Report evaluation or summary pending.";
+            detail.append(pending);
+          }
+          const source = document.createElement("a");
+          source.className = "source-link";
+          if (safeHref(source, report.canonicalUrl)) {
+            source.target = "_blank";
+            source.rel = "noopener noreferrer";
+            source.textContent = "Read original report ↗";
+            detail.append(source);
+          }
+          details.append(summary, detail);
+          content.append(details);
+          const sourceColumn = document.createElement("div");
+          sourceColumn.className = "source-column";
+          sourceColumn.append(createReportTag(report.source));
+          row.append(
+            scoreColumn,
+            content,
+            sourceColumn,
+            createExpandButton(details),
+          );
+          reportsFeed.append(row);
+        }
+      }
+
+      function renderReportDiagnostic(diagnostics) {
+        const lastRun = diagnostics?.lastRun;
+        if (!lastRun) {
+          reportsDiagnostic.textContent = "No discovery run yet";
+          return;
+        }
+        if (lastRun.status === "running") {
+          const source = diagnostics.currentSource
+            ? ` · ${sourceLabel(diagnostics.currentSource)}`
+            : "";
+          const stage = diagnostics.currentStage
+            ? ` · ${diagnostics.currentStage}`
+            : "";
+          reportsDiagnostic.textContent = `Discovery running${source}${stage}`;
+        } else if (lastRun.status === "failed") {
+          reportsDiagnostic.textContent = `Last discovery failed: ${lastRun.errorMessage || "unknown error"}`;
+        } else if (lastRun.candidatesFound === 0) {
+          reportsDiagnostic.textContent =
+            "Discovery completed with no new reports";
+        } else {
+          reportsDiagnostic.textContent = "Discovery completed";
+        }
+      }
+
+      function renderVulnerabilities(vulnerabilities, append = false) {
+        if (!append) cvesTableBody.replaceChildren();
+        if (!vulnerabilities.length && !append) {
+          cvesSummary.textContent = "No vulnerabilities match these filters";
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = 6;
+          cell.className = "empty";
+          cell.textContent = "No recent vulnerabilities found.";
+          row.append(cell);
+          cvesTableBody.append(row);
+          return;
+        }
+        const loaded = cvesTableBody.querySelectorAll(".cve-data-row").length;
+        for (const vulnerability of vulnerabilities) {
+          const row = document.createElement("tr");
+          const severity = document.createElement("td");
+          const badge = document.createElement("span");
+          badge.className = `severity-badge severity-${vulnerability.severity}`;
+          badge.textContent = vulnerability.severity;
+          severity.append(badge);
+          const id = document.createElement("td");
+          const link = document.createElement("a");
+          link.href = `https://cve.mitre.org/cgi-bin/cvename.cgi?name=${encodeURIComponent(vulnerability.cveId)}`;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = vulnerability.cveId;
+          id.append(link);
+          const title = document.createElement("td");
+          title.className = "cve-title";
+          title.textContent = vulnerability.title;
+          const cvss = document.createElement("td");
+          cvss.textContent =
+            vulnerability.cvssScore === null
+              ? "—"
+              : Number(vulnerability.cvssScore).toFixed(1);
+          const published = document.createElement("td");
+          published.textContent = formatDate(vulnerability.publishedAt);
+          const products = document.createElement("td");
+          products.textContent = vulnerability.affectedProducts.length
+            ? vulnerability.affectedProducts.join(", ")
+            : "—";
+          row.className = "cve-data-row";
+          row.append(severity, id, title, cvss, published, products);
+          const detailRow = document.createElement("tr");
+          const detailCell = document.createElement("td");
+          detailCell.colSpan = 6;
+          const details = document.createElement("details");
+          const summary = document.createElement("summary");
+          summary.className = "story-toggle";
+          summary.textContent =
+            "View description, exploitability, mitigation, and references";
+          const description = document.createElement("p");
+          description.className = "cve-description";
+          description.textContent = vulnerability.description;
+          details.append(summary, description);
+          if (vulnerability.exploitability)
+            appendCveDetail(
+              details,
+              "Exploitability",
+              vulnerability.exploitability,
+            );
+          if (vulnerability.mitigation)
+            appendCveDetail(details, "Mitigation", vulnerability.mitigation);
+          if (vulnerability.references.length) {
+            const references = document.createElement("p");
+            references.className = "cve-description";
+            references.textContent = "References: ";
+            vulnerability.references.forEach((reference, index) => {
+              if (index > 0) references.append(", ");
+              const referenceLink = document.createElement("a");
+              if (safeHref(referenceLink, reference)) {
+                referenceLink.target = "_blank";
+                referenceLink.rel = "noopener noreferrer";
+                referenceLink.textContent = `Reference ${index + 1}`;
+                references.append(referenceLink);
+              } else {
+                references.append(`Reference ${index + 1} unavailable`);
+              }
+            });
+            details.append(references);
+          }
+          detailCell.append(details);
+          detailRow.append(detailCell);
+          cvesTableBody.append(row, detailRow);
+        }
+        cvesSummary.textContent = `${loaded + vulnerabilities.length} vulnerabilities${cvesHasMore ? "" : " · end of window"}`;
+      }
+
+      function appendCveDetail(parent, labelText, value) {
+        const detail = document.createElement("p");
+        detail.className = "cve-description";
+        detail.textContent = `${labelText}: ${value}`;
+        parent.append(detail);
+      }
+
+      function createReportTag(text) {
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = label(text);
+        return tag;
+      }
+
+      function appendReportList(parent, heading, values) {
+        if (!values?.length) return;
+        const headingElement = document.createElement("p");
+        headingElement.className = "detail-label";
+        headingElement.textContent = heading;
+        const list = document.createElement("ul");
+        values.forEach((value) => {
+          const item = document.createElement("li");
+          item.textContent = value;
+          list.append(item);
+        });
+        parent.append(headingElement, list);
+      }
+
+      async function loadReports({ append = false } = {}) {
+        if (reportsLoading) return;
+        reportsLoading = true;
+        reportsLoadMore.disabled = true;
+        if (!append) reportsNextCursor = null;
+        const params = new URLSearchParams({
+          limit: "50",
+          minimumScore: reportFilterState.minimumScore,
+        });
+        for (const name of ["source", "reportType", "temporalClassification"]) {
+          reportFilterState[name].forEach((value) =>
+            params.append(name, value),
+          );
+        }
+        if (reportFilterState.year) params.set("year", reportFilterState.year);
+        params.set("sort", reportFilterState.sort);
+        params.set(
+          "observedWithinHours",
+          reportFilterState.observedWithinHours,
+        );
+        if (append && reportsNextCursor)
+          params.set("cursor", reportsNextCursor);
+        try {
+          const response = await fetch(`/api/reports?${params}`);
+          if (!response.ok) throw new Error("Unable to load reports");
+          const data = await response.json();
+          const diagnosticsResponse = await fetch("/api/diagnostics");
+          if (diagnosticsResponse.ok) {
+            renderReportDiagnostic((await diagnosticsResponse.json()).reports);
+          }
+          reportsHasMore = data.hasMore;
+          reportsNextCursor = data.nextCursor;
+          renderReports(data.reports, append);
+          reportsLoadMore.hidden = !reportsHasMore;
+          reportsPaginationStatus.textContent = reportsHasMore
+            ? ""
+            : "End of discovery window";
+        } finally {
+          reportsLoading = false;
+          reportsLoadMore.disabled = false;
+        }
+      }
+
+      async function loadVulnerabilities({ append = false } = {}) {
+        if (cvesLoading) return;
+        cvesLoading = true;
+        cvesLoadMore.disabled = true;
+        if (!append) cvesNextCursor = null;
+        const params = new URLSearchParams({
+          limit: "50",
+          sort: cveFilterState.sort,
+          publishedWithinHours: cveFilterState.window,
+        });
+        cveFilterState.severity.forEach((value) =>
+          params.append("severity", value),
+        );
+        if (cveFilterState.search) params.set("search", cveFilterState.search);
+        if (cveFilterState.minimumCvss)
+          params.set("minimumCvss", cveFilterState.minimumCvss);
+        if (append && cvesNextCursor) params.set("cursor", cvesNextCursor);
+        try {
+          const response = await fetch(`/api/vulnerabilities?${params}`);
+          if (!response.ok) throw new Error("Unable to load vulnerabilities");
+          const data = await response.json();
+          cvesHasMore = data.hasMore;
+          cvesNextCursor = data.nextCursor;
+          renderVulnerabilities(data.vulnerabilities, append);
+          cvesLoadMore.hidden = !cvesHasMore;
+          cvesPaginationStatus.textContent = cvesHasMore
+            ? ""
+            : "End of vulnerability window";
+        } finally {
+          cvesLoading = false;
+          cvesLoadMore.disabled = false;
+        }
+      }
+
+      async function loadFeed({ append = false } = {}) {
+        if (feedLoading) {
+          if (!append) feedReloadQueued = true;
+          return;
+        }
+        feedLoading = true;
+        loadMore.disabled = true;
+        if (!append) {
+          nextCursor = null;
+          hasMore = false;
+          paginationStatus.textContent = "";
+        } else {
+          paginationStatus.textContent = "Loading more…";
+        }
+        const params = new URLSearchParams();
+        for (const [name, value] of Object.entries(filterState)) {
+          if (Array.isArray(value)) {
+            value.forEach((item) => params.append(name, item));
+          } else if (value) {
+            params.set(name, value);
+          }
+        }
+        params.set("limit", "50");
+        if (append && nextCursor) params.set("cursor", nextCursor);
+        try {
+          const response = await fetch(`/api/feed?${params}`);
+          if (!response.ok) throw new Error("Unable to load feed");
+          const data = await response.json();
+          hasMore = data.hasMore;
+          nextCursor = data.nextCursor;
+          renderStories(data.stories, append);
+          loadMore.hidden = !hasMore;
+          paginationStatus.textContent = hasMore ? "" : "End of feed";
+          syncStatus.textContent = "Updated";
+        } finally {
+          feedLoading = false;
+          loadMore.disabled = false;
+          if (feedReloadQueued) {
+            feedReloadQueued = false;
+            loadFeed().catch(showFeedError);
+          }
+        }
+      }
+
+      function showFeedError() {
+        syncStatus.textContent = "Unable to load feed. Try again.";
+      }
+
+      loadMore.addEventListener("click", () =>
+        loadFeed({ append: true }).catch(showFeedError),
+      );
+
+      const feedObserver = new IntersectionObserver((entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !feedLoading) {
+          loadFeed({ append: true }).catch(showFeedError);
+        }
+      });
+      feedObserver.observe(loadMore);
+
+      document
+        .querySelectorAll("[data-filter] .filter-option")
+        .forEach((button) => {
+          button.addEventListener("click", () =>
+            toggleFilter(
+              button.closest("[data-filter]").dataset.filter,
+              button.dataset.value,
+            ),
+          );
+        });
+
+      clearFilters.addEventListener("click", () => {
+        filterState.sort = "score";
+        filterState.topic = [];
+        filterState.contentType = [];
+        filterState.triageState = [];
+        filterState.sourceName = [];
+        filterState.category = [];
+        filterState.timeWindow = "";
+        filterState.minimumFinalScore = "80";
+        syncNewsFilterControls();
+        document.querySelectorAll("[data-filter-name]").forEach((button) => {
+          button.setAttribute("aria-pressed", "false");
+        });
+        scheduleFeedLoad();
+      });
+
+      scoreFilter.addEventListener("input", () => {
+        scoreThreshold.textContent =
+          scoreFilter.value === "0" ? "Any" : `${scoreFilter.value}+`;
+        filterState.minimumFinalScore = scoreFilter.value;
+        window.clearTimeout(scoreFilterTimer);
+        scoreFilterTimer = window.setTimeout(() => scheduleFeedLoad(), 150);
+      });
+
+      function setNewsFiltersOpen(open) {
+        newsToolbar.classList.toggle("mobile-open", open);
+        newsFilterToggle.setAttribute("aria-expanded", String(open));
+        newsFilterBackdrop.hidden = !open;
+      }
+
+      newsFilterToggle.addEventListener("click", () =>
+        setNewsFiltersOpen(true),
+      );
+      newsFilterClose.addEventListener("click", () =>
+        setNewsFiltersOpen(false),
+      );
+      newsFilterApply.addEventListener(
+        "click",
+        () => (
+          setNewsFiltersOpen(false),
+          scheduleFeedLoad({ immediate: true })
+        ),
+      );
+      newsFilterBackdrop.addEventListener("click", () =>
+        setNewsFiltersOpen(false),
+      );
+
+      document.querySelectorAll(".view-tab").forEach((button) => {
+        button.addEventListener("click", () => {
+          activeView = button.dataset.view;
+          document.querySelectorAll(".view-tab").forEach((tab) => {
+            const selected = tab === button;
+            tab.classList.toggle("active", selected);
+            tab.setAttribute("aria-selected", String(selected));
+          });
+          const viewUrl = new URL(window.location.href);
+          viewUrl.hash = activeView;
+          window.history.replaceState(
+            null,
+            "",
+            `${viewUrl.pathname}${viewUrl.search}${viewUrl.hash}`,
+          );
+          const reportsActive = activeView === "reports";
+          const cvesActive = activeView === "cves";
+          mobileFilterBar.hidden = reportsActive || cvesActive;
+          newsToolbar.hidden = reportsActive || cvesActive;
+          reportsToolbar.hidden = !reportsActive;
+          cvesToolbar.hidden = !cvesActive;
+          document.querySelector("#news-panel").hidden =
+            reportsActive || cvesActive;
+          reportsView.hidden = !reportsActive;
+          cvesView.hidden = !cvesActive;
+          if (reportsActive) loadReports().catch(showFeedError);
+          if (cvesActive) loadVulnerabilities().catch(showFeedError);
+        });
+      });
+
+      document.querySelectorAll(".report-filter-option").forEach((button) => {
+        button.addEventListener("click", () => {
+          const group = button.closest("[data-report-filter]");
+          const name = group.dataset.reportFilter;
+          const value = button.dataset.value;
+          if (name === "sort" || name === "observedWithinHours") {
+            if (name === "observedWithinHours") {
+              reportFilterState[name] = value;
+            } else {
+              reportFilterState.sort = value;
+            }
+            group
+              .querySelectorAll(".report-filter-option")
+              .forEach((option) =>
+                option.classList.toggle("active", option === button),
+              );
+          } else {
+            const values = reportFilterState[name];
+            reportFilterState[name] = values.includes(value)
+              ? values.filter((item) => item !== value)
+              : [...values, value];
+            button.classList.toggle(
+              "active",
+              reportFilterState[name].includes(value),
+            );
+          }
+          loadReports().catch(showFeedError);
+        });
+      });
+
+      reportYear.addEventListener("change", () => {
+        reportFilterState.year = reportYear.value;
+        loadReports().catch(showFeedError);
+      });
+      reportScoreFilter.addEventListener("input", () => {
+        reportFilterState.minimumScore = reportScoreFilter.value;
+        reportScoreThreshold.textContent =
+          reportScoreFilter.value === "0"
+            ? "Any"
+            : `${reportScoreFilter.value}+`;
+        loadReports().catch(showFeedError);
+      });
+      document
+        .querySelector("#clear-report-filters")
+        .addEventListener("click", () => {
+          reportFilterState.source = [];
+          reportFilterState.reportType = [];
+          reportFilterState.temporalClassification = [];
+          reportFilterState.year = "";
+          reportFilterState.minimumScore = "0";
+          reportFilterState.sort = "score";
+          reportFilterState.observedWithinHours = "72";
+          reportYear.value = "";
+          reportScoreFilter.value = "0";
+          reportScoreThreshold.textContent = "Any";
+          document
+            .querySelectorAll(".report-filter-option")
+            .forEach((button) =>
+              button.classList.toggle(
+                "active",
+                (button.dataset.value === "score" &&
+                  button.closest("[data-report-filter]").dataset
+                    .reportFilter === "sort") ||
+                  (button.dataset.value === "72" &&
+                    button.closest("[data-report-filter]").dataset
+                      .reportFilter === "observedWithinHours"),
+              ),
+            );
+          loadReports().catch(showFeedError);
+        });
+      reportsLoadMore.addEventListener("click", () =>
+        loadReports({ append: true }).catch(showFeedError),
+      );
+      document
+        .querySelectorAll("[data-cve-filter] .filter-option")
+        .forEach((button) => {
+          button.addEventListener("click", () => {
+            const group = button.closest("[data-cve-filter]");
+            const name = group.dataset.cveFilter;
+            const value = button.dataset.value;
+            if (name === "sort" || name === "window") {
+              cveFilterState[name] = value;
+              group
+                .querySelectorAll(".filter-option")
+                .forEach((option) =>
+                  option.classList.toggle("active", option === button),
+                );
+            } else {
+              cveFilterState.severity = cveFilterState.severity.includes(value)
+                ? cveFilterState.severity.filter((item) => item !== value)
+                : [...cveFilterState.severity, value];
+              button.classList.toggle(
+                "active",
+                cveFilterState.severity.includes(value),
+              );
+            }
+            loadVulnerabilities().catch(showFeedError);
+          });
+        });
+      let cveSearchTimer;
+      cveSearch.addEventListener("input", () => {
+        window.clearTimeout(cveSearchTimer);
+        cveSearchTimer = window.setTimeout(() => {
+          cveFilterState.search = cveSearch.value.trim();
+          loadVulnerabilities().catch(showFeedError);
+        }, 200);
+      });
+      cveMinimum.addEventListener("change", () => {
+        cveFilterState.minimumCvss = cveMinimum.value;
+        loadVulnerabilities().catch(showFeedError);
+      });
+      cvesLoadMore.addEventListener("click", () =>
+        loadVulnerabilities({ append: true }).catch(showFeedError),
+      );
+      loadFeed().catch(showFeedError);
+      if (
+        window.location.hash === "#reports" ||
+        window.location.hash === "#cves"
+      ) {
+        const view = window.location.hash.slice(1);
+        document.querySelector(`#${view}-tab`).click();
+      }
+    </script>
+  </body>
+</html>

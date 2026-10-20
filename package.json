@@ -1,0 +1,26 @@
+{
+  "name": "personal-intelligence-feed-local",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/server.ts",
+    "start": "bun run src/server.ts",
+    "test": "vitest run",
+    "test:sqlite": "bun test tests/db.bun.test.ts tests/documents.bun.test.ts tests/sync.bun.test.ts tests/http-sync.bun.test.ts tests/feed.bun.test.ts tests/documents-http.bun.test.ts tests/evaluate.bun.test.ts tests/feed-http.bun.test.ts tests/retention.bun.test.ts tests/config.bun.test.ts tests/mediastack.bun.test.ts tests/reports-repository.bun.test.ts tests/reports-content.bun.test.ts tests/reports-runner.bun.test.ts tests/report-evaluations.bun.test.ts tests/report-summaries.bun.test.ts tests/reports-feed-http.bun.test.ts tests/cves.bun.test.ts tests/auth.bun.test.ts",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "bun run typecheck && bun run format:check && bun run test && bun run test:sqlite"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.2",
+    "@types/nodemailer": "8.0.2",
+    "prettier": "3.9.9",
+    "typescript": "7.0.2",
+    "vitest": "5.0.3"
+  },
+  "dependencies": {
+    "nodemailer": "10.1.1"
+  }
+}

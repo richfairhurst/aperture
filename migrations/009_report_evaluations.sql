@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS report_evaluations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  report_version_id INTEGER NOT NULL REFERENCES report_versions (id) ON DELETE CASCADE,
+  rubric_version TEXT NOT NULL,
+  prompt_version TEXT NOT NULL,
+  ranking_config_version TEXT NOT NULL,
+  report_type TEXT NOT NULL,
+  primary_topic TEXT NOT NULL,
+  activity_status TEXT NOT NULL,
+  quality_score INTEGER NOT NULL CHECK (quality_score BETWEEN 0 AND 4),
+  methodology_quality_score INTEGER NOT NULL CHECK (methodology_quality_score BETWEEN 0 AND 4),
+  strategic_relevance_score INTEGER NOT NULL CHECK (strategic_relevance_score BETWEEN 0 AND 4),
+  novelty_score INTEGER NOT NULL CHECK (novelty_score BETWEEN 0 AND 4),
+  decision_utility_score INTEGER NOT NULL CHECK (decision_utility_score BETWEEN 0 AND 4),
+  contains_evidence INTEGER NOT NULL CHECK (contains_evidence IN (0, 1)),
+  primarily_promotional INTEGER NOT NULL CHECK (primarily_promotional IN (0, 1)),
+  final_score REAL NOT NULL,
+  raw_response_json TEXT NOT NULL,
+  evaluated_at TEXT NOT NULL,
+  UNIQUE (report_version_id, rubric_version, prompt_version, ranking_config_version)
+);

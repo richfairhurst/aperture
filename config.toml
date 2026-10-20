@@ -1,0 +1,102 @@
+# Non-secret application defaults.
+# Provider credentials belong in .env locally and protected server environment
+# configuration in production. Do not add API keys to this file.
+
+[app]
+timezone = "Europe/London"
+approved_email_env = "AUTH_APPROVED_EMAIL"
+
+[ingestion]
+window_hours = 12
+recovery_max_age_days = 30
+watermark_overlap_seconds = 300
+supported_categories = ["article", "rss", "email"]
+
+[processing]
+max_normalized_characters = 40000
+max_attempts = 3
+lease_seconds = 600
+application_budget_seconds = 20
+max_external_provider_calls = 2
+worker_batch_size = 1
+summary_watch_items = false
+
+[polling]
+# The local Bun server checks enabled sources on this cadence while running.
+# Individual sources may apply a slower cadence below for account limits.
+interval_hours = 1
+
+[ranking]
+quality_weight = 0.45
+personal_utility_weight = 0.40
+actionability_weight = 0.15
+minimum_display_score = 0
+configuration_version = "ranking-v1"
+
+[providers]
+typesafe_model = "jev-latest"
+summary_provider = "unset"
+summary_model = "unset"
+summary_prompt_version = "summary-v1"
+
+[sources.youtube]
+enabled = true
+channel_ids = ["UCdWIQh9DGG6uhJk8eyIFl1w"]
+max_videos_per_sync = 20
+transcript_provider = "yt-dlp"
+
+[sources.mediastack]
+# Polling cadence is independent from the shared content-ingestion window.
+enabled = true
+api_key_env = "MEDIASTACK_API_KEY"
+keywords = ["China", "Iran", "Russia", "cybersecurity", "geopolitics", "artificial intelligence"]
+cadence_hours = 24
+query_window_hours = 12
+monthly_query_allowance = 100
+query_interval_seconds = 2
+
+[sources.reports]
+enabled = true
+cadence_hours = 1
+query_window_hours = 48
+max_detail_fetches = 100
+request_timeout_ms = 30000
+max_run_duration_ms = 600000
+processing_concurrency = 4
+rosti_api_key_env = "ROSTI_API_KEY"
+orkl_endpoint = "https://orkl.eu/api/v1/library/entries"
+rosti_endpoint = "https://api.rosti.dev/v2/reports"
+github_owner = "jacobdjwilson"
+github_repository = "awesome-annual-security-reports"
+
+[sources.reddit]
+enabled = true
+subreddits = ["blueteamsec"]
+cadence_hours = 1
+query_window_hours = 12
+max_items_per_poll = 50
+max_detail_fetches = 25
+request_timeout_ms = 15000
+max_response_bytes = 2000000
+
+[sources.cves]
+enabled = true
+endpoint = "https://cve.circl.lu/api/vulnerability/recent"
+cadence_hours = 6
+query_window_hours = 24
+retention_days = 7
+request_timeout_ms = 30000
+max_response_bytes = 20000000
+
+[sources.github_trending]
+enabled = true
+endpoint = "https://github.com/trending?since=daily"
+cadence_hours = 6
+max_items_per_poll = 25
+max_detail_fetches = 25
+request_timeout_ms = 20000
+max_response_bytes = 10000000
+
+[schedule]
+sync_crons = ["5 0 * * *", "5 12 * * *"]
+job_poll_cron = "*/5 * * * *"

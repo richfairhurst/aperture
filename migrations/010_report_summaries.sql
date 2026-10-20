@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS report_summaries (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  report_version_id INTEGER NOT NULL REFERENCES report_versions (id) ON DELETE CASCADE,
+  provider TEXT NOT NULL,
+  model TEXT NOT NULL,
+  prompt_version TEXT NOT NULL,
+  read_verdict TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  one_sentence_summary TEXT NOT NULL,
+  key_takeaways_json TEXT NOT NULL,
+  important_findings_json TEXT NOT NULL,
+  deep_insights_json TEXT NOT NULL,
+  mental_models_json TEXT NOT NULL,
+  practical_implications_json TEXT NOT NULL,
+  recommendations_json TEXT NOT NULL,
+  methodology_limitations TEXT NOT NULL,
+  activity_context TEXT NOT NULL,
+  quotes_json TEXT NOT NULL,
+  references_json TEXT NOT NULL,
+  raw_response_json TEXT NOT NULL,
+  generated_at TEXT NOT NULL,
+  UNIQUE (report_version_id, prompt_version)
+);
